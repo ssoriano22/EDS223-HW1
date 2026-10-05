@@ -1,0 +1,92 @@
+---
+title: EDS223 - HW1
+subtitle: Map making practice
+format: pdf
+---
+
+# Background
+
+As part of my previous graduate program in bioinformatics at Unversity of Oregon, I worked as a Computational Biologist Intern in the cancer proteomics group at the Oregon Health & Science University (OHSU) Cancer Early Detection Advanced Research Center (CEDAR). After surveying the types of data collected through this [EJScreen: Environmental Justice Screening and Mapping Tool](https://drive.google.com/file/d/1nG6Nj1bXfzQFOVMO8Km3eNy4SWu1YcIQ/view) and reading the column descriptions, I noticed the Air Toxins Cancer Risk columns and decided to see if any of the demographic percentages had a similar pattern to the cancer risk percentages. Below are two maps of the Western US (CA, NV, OR, WA), the first mapping the percentage of air toxin (inhalation) cancer risk by county, and the second mapping the percentage of people of color by county.
+
+```{r}
+#| warning: false
+
+# Load packages
+library(tidyverse)
+library(sf)
+library(here)
+library(tmap)
+```
+
+```{r}
+#| warning: false
+
+# DATA PROCESSING CODE
+
+# Load geodatabase of EJScreen data at the Census Block Group level
+ejscreen <- sf::st_read(here::here("data", "data", "ejscreen","EJSCREEN_2023_BG_StatePct_with_AS_CNMI_GU_VI.gdb")) 
+
+# Filter to the west US states - maintain county borders
+west_us <- ejscreen %>%
+  dplyr::filter(ST_ABBREV %in% c("CA","OR","WA","NV")) # "ID","AZ","UT"
+
+# Filter to state borders only
+west_us_states <- aggregate(west_us, by = list(west_us$ST_ABBREV), FUN = mean)
+
+# Calculate average values for all variables within west US counties
+west_us_counties <- aggregate(west_us, by = list(west_us$CNTY_NAME), FUN = mean)
+```
+
+# Map 1 - Air toxics cancer risk 
+
+```{r}
+#| warning: false
+
+# Create ENVIRONMENTAL map - west US w/ air toxin cancer risk, excluding skin cancer (%) - CANCER
+tm_shape(west_us_counties) +
+    tm_polygons(fill = "CANCER",
+                fill.scale = tm_scale(values = c("#ade4f8","#e3271aae")),
+                fill.legend = tm_legend(title = "Air Toxins Cancer Risk (%)",
+                                        position = tm_pos_out("right")),
+                lwd = 0.5) +
+tm_shape(west_us_states) +
+    tm_borders(col = "black",
+               lwd = 2) +
+tm_compass(position = c("left","bottom")) +
+tm_scalebar(position = c("left","bottom")) +
+tm_title(text = "Western US: Lifetime Inhalation Cancer Risk per County",
+         frame = TRUE,
+         position = tm_pos_out("center","top")) + 
+tm_layout(#text.fontfamily = "Arial",
+          bg.color = "#d8e1e6")
+```
+Figure 1: This first map of counties in the western US (CA, NV, OR, WA) is colored by the percentage lifetime air toxin inhalation cancer risk (see Discussion for definition). Blue equates to minimal percentage risk, while red signals higher percentage risk. Grey denotes no data available.
+
+# Map 2
+
+```{r}
+#| warning: false
+
+# Create DEMOGRAPHIC map - west US w/ people of color (%) (west us)
+tm_shape(west_us_counties) +
+    tm_polygons(fill = "PEOPCOLORPCT",
+                fill.scale = tm_scale(values = c("#f8fabb","#e3271aae")),
+                fill.legend = tm_legend(title = "People of Color (%)",
+                                        position = tm_pos_out("right")),
+                lwd = 0.5) +
+tm_shape(west_us_states) +
+    tm_borders(col = "black",
+               lwd = 2) +
+tm_compass(position = c("left","bottom")) +
+tm_scalebar(position = c("left","bottom"))  +
+tm_title(text = "Western US: People of Color per County",
+         frame = TRUE,
+         position = tm_pos_out("center","top")) + 
+tm_layout(#text.fontfamily = "Arial",
+          bg.color = "#d8e1e6")
+```
+Figure 2: This second map of counties in the western US (CA, NV, OR, WA) is colored by the percentage of people reporting as a person of color (see Discussion for definition). Blue equates a lower percentage of people of color in a county, while red signals higher percentage people of color in a county. Grey denotes no data available.
+
+# Discussion
+
+The following areas have higher percentages of both air toxin cancer risk and people of color compared to surrounding counties: south and central areas of California, southern Nevada, south and central Oregon, and central Washington. While no statistics have been run, the fact that the counties in these areas have both higher percentages of people of color and air toxin cancer risk signals a potential for an environmental justice issue related to racial bias in air quality monitoring and control. Each map does display variables that require additional definition. The air toxins cancer risk is defined in the documentation as "the estimated lifetime inhalation cancer risk from the analyzed carcinogens in ambient outdoor air, as provided by the 2019 AirToxScreen." This variable did not include skin cancer-related data, and "lifetime" was defined as 70 years. The people of color measurement was determined by the percentage of people identifying as any category other than "non-Hispanic white-alone individuals."

@@ -10,7 +10,8 @@ This repository contains files related to the HW1 assignment "Map making practic
 The below directory tree maps out the layout of this repository:
 
 ```
-├── data                # Contains all data files (included in .gitignore)
+├── .gitignore          # .gitignore directory
+├── data                # Contains all data files
 │   └── ejscreen        # Contains EJScreen data files
 ├── ej_screen.pdf       # PDF containing maps and analysis (rendered from ej_screen.qmd)
 ├── ej_screen.qmd       # Quarto file containing maps and analysis

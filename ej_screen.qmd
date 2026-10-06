@@ -1,12 +1,11 @@
 ---
 title: EDS223 - HW1
 subtitle: Map making practice
+author: Sophia Soriano
 format: pdf
 ---
 
-# Background
-
-As part of my previous graduate program in bioinformatics at Unversity of Oregon, I worked as a Computational Biologist Intern in the cancer proteomics group at the Oregon Health & Science University (OHSU) Cancer Early Detection Advanced Research Center (CEDAR). After surveying the types of data collected through this [EJScreen: Environmental Justice Screening and Mapping Tool](https://drive.google.com/file/d/1nG6Nj1bXfzQFOVMO8Km3eNy4SWu1YcIQ/view) and reading the column descriptions, I noticed the Air Toxins Cancer Risk columns and decided to see if any of the demographic percentages had a similar pattern to the cancer risk percentages. Below are two maps of the Western US (CA, NV, OR, WA), the first mapping the percentage of air toxin (inhalation) cancer risk by county, and the second mapping the percentage of people of color by county.
+# Map 1: Western US - Air Toxins (Lifetime Inhalation) Cancer Risk US Percentile
 
 ```{r}
 #| warning: false
@@ -24,7 +23,7 @@ library(tmap)
 # DATA PROCESSING CODE
 
 # Load geodatabase of EJScreen data at the Census Block Group level
-ejscreen <- sf::st_read(here::here("data", "data", "ejscreen","EJSCREEN_2023_BG_StatePct_with_AS_CNMI_GU_VI.gdb")) 
+ejscreen <- sf::st_read(here::here("data", "ejscreen","EJSCREEN_2023_BG_StatePct_with_AS_CNMI_GU_VI.gdb")) 
 
 # Filter to the west US states - maintain county borders
 west_us <- ejscreen %>%
@@ -37,56 +36,117 @@ west_us_states <- aggregate(west_us, by = list(west_us$ST_ABBREV), FUN = mean)
 west_us_counties <- aggregate(west_us, by = list(west_us$CNTY_NAME), FUN = mean)
 ```
 
-# Map 1 - Air toxics cancer risk 
-
 ```{r}
 #| warning: false
+#| fig-width: 10
+#| fig-height: 7
 
-# Create ENVIRONMENTAL map - west US w/ air toxin cancer risk, excluding skin cancer (%) - CANCER
+# Create ENVIRONMENTAL map - west US, air toxin cancer risk (US percentile)
+# Map west US counties as polygons - base layer
 tm_shape(west_us_counties) +
-    tm_polygons(fill = "CANCER",
+    tm_polygons(# Use P_CANCER values to color polygons
+                fill = "P_CANCER",
+                # Define color scale
                 fill.scale = tm_scale(values = c("#ade4f8","#e3271aae")),
-                fill.legend = tm_legend(title = "Air Toxins Cancer Risk (%)",
+                fill.legend = tm_legend(title = "Air Toxins Cancer Risk\n(US Percentile)",
+                                        # Specify legend layout
                                         position = tm_pos_out("right")),
-                lwd = 0.5) +
+                # Set line width for county borders
+                lwd = 0.5
+                ) +
+# Map west US states as borders - 2nd layer
 tm_shape(west_us_states) +
-    tm_borders(col = "black",
-               lwd = 2) +
+    tm_borders(# Set line color for state borders
+               col = "black",
+               # Set line width for state borders
+               lwd = 2) + 
+# Add compass to bottom left
 tm_compass(position = c("left","bottom")) +
+# Add scalebar to bottom left
 tm_scalebar(position = c("left","bottom")) +
-tm_title(text = "Western US: Lifetime Inhalation Cancer Risk per County",
-         frame = TRUE,
-         position = tm_pos_out("center","top")) + 
-tm_layout(#text.fontfamily = "Arial",
-          bg.color = "#d8e1e6")
+# Specify additional layout options
+tm_layout(main.title = "Western US: Lifetime Inhalation Cancer Risk per County",
+          # Slightly increase title size (ratio)
+          main.title.size = 1.5,
+          # Add title frame box
+          main.title.frame = TRUE,
+          # Set aspect ratio to adjust dynamically with display area (not static)
+          asp = 0,
+          # Increase inner margins to keep compass and scale bar in background area
+          inner.margins = c(0.1, 0.05, 0.05, 0.05),
+          # Specify legend title size
+          legend.title.size = 1.1,
+          # Specify legend text size
+          legend.text.size = 0.9,
+          # Set background color
+          bg.color = "#f3f6f8",
+          # Set font family
+          text.fontfamily = "sans"
+          )
 ```
-Figure 1: This first map of counties in the western US (CA, NV, OR, WA) is colored by the percentage lifetime air toxin inhalation cancer risk (see Discussion for definition). Blue equates to minimal percentage risk, while red signals higher percentage risk. Grey denotes no data available.
+Figure 1: This first map of counties in the western US (CA, NV, OR, WA) is colored by the lifetime air toxin inhalation cancer risk US percentile (see Discussion below for definition). Blue equates to counties in minimal risk percentiles, while red signals counties in higher risk percentiles. Grey denotes no data available.
 
-# Map 2
+# Map 2: Western US - Percentage People of Color by County US Percentile
 
 ```{r}
 #| warning: false
+#| fig-width: 10
+#| fig-height: 7
 
-# Create DEMOGRAPHIC map - west US w/ people of color (%) (west us)
+# Create DEMOGRAPHIC map - west US, people of color % (US percentile)
+# Map west US counties as polygons - base layer
 tm_shape(west_us_counties) +
-    tm_polygons(fill = "PEOPCOLORPCT",
+    tm_polygons(# Use P_PEOPCOLORPCT values to color polygons
+                fill = "P_PEOPCOLORPCT",
+                # Define color scale
                 fill.scale = tm_scale(values = c("#f8fabb","#e3271aae")),
-                fill.legend = tm_legend(title = "People of Color (%)",
+                fill.legend = tm_legend(title = "Percentage People of Color\n(US Percentile)",
+                                        # Specify legend layout
                                         position = tm_pos_out("right")),
+                # Set line width for county borders
                 lwd = 0.5) +
+# Map west US states as borders - 2nd layer
 tm_shape(west_us_states) +
-    tm_borders(col = "black",
+    tm_borders(# Set line color for state borders
+               col = "black",
+               # Set line width for state borders
                lwd = 2) +
+# Add compass to bottom left
 tm_compass(position = c("left","bottom")) +
-tm_scalebar(position = c("left","bottom"))  +
-tm_title(text = "Western US: People of Color per County",
-         frame = TRUE,
-         position = tm_pos_out("center","top")) + 
-tm_layout(#text.fontfamily = "Arial",
-          bg.color = "#d8e1e6")
+# Add scalebar to bottom left
+tm_scalebar(position = c("left","bottom")) + 
+# Specify additional layout options
+tm_layout(main.title = "Western US: People of Color per County",
+          # Slightly increase title size (ratio)
+          main.title.size = 1.5,
+          # Add title frame box
+          main.title.frame = TRUE,
+          # Set aspect ratio to adjust dynamically with display area (not static)
+          asp = 0,
+          # Increase inner margins to keep compass and scale bar in background area
+          inner.margins = c(0.1, 0.05, 0.05, 0.05),
+          # Specify legend title size
+          legend.title.size = 1.1,
+          # Specify legend text size
+          legend.text.size = 0.9,
+          # Set background color
+          bg.color = "#f3f6f8",
+          # Set font family
+          text.fontfamily = "sans"
+          )
 ```
-Figure 2: This second map of counties in the western US (CA, NV, OR, WA) is colored by the percentage of people reporting as a person of color (see Discussion for definition). Blue equates a lower percentage of people of color in a county, while red signals higher percentage people of color in a county. Grey denotes no data available.
+Figure 2: This second map of counties in the western US (CA, NV, OR, WA) is colored by the US percentile of the percentage people of color (see Discussion for definition). Blue equates to counties in a lower percentile, while red signals counties in a higher percentile. Grey denotes no data available.
 
 # Discussion
 
-The following areas have higher percentages of both air toxin cancer risk and people of color compared to surrounding counties: south and central areas of California, southern Nevada, south and central Oregon, and central Washington. While no statistics have been run, the fact that the counties in these areas have both higher percentages of people of color and air toxin cancer risk signals a potential for an environmental justice issue related to racial bias in air quality monitoring and control. Each map does display variables that require additional definition. The air toxins cancer risk is defined in the documentation as "the estimated lifetime inhalation cancer risk from the analyzed carcinogens in ambient outdoor air, as provided by the 2019 AirToxScreen." This variable did not include skin cancer-related data, and "lifetime" was defined as 70 years. The people of color measurement was determined by the percentage of people identifying as any category other than "non-Hispanic white-alone individuals."
+As part of my previous graduate program in bioinformatics at Unversity of Oregon, I worked as a Computational Biologist in the cancer proteomics group at the Oregon Health & Science University (OHSU) Cancer Early Detection Advanced Research Center (CEDAR). After surveying the types of data collected through the EJScreen: Environmental Justice Screening and Mapping Tool and reading the column descriptions, I noticed the Air Toxins Cancer Risk columns and decided to see if any of the demographic percentiles had a similar pattern to the cancer risk percentiles in the Western US (CA, NV, OR, WA). Percentile appeared to be a more appropriate unit to compare an environmental variable with a demographic variable. The air toxins cancer risk is defined in the documentation as "the estimated lifetime inhalation cancer risk from the analyzed carcinogens in ambient outdoor air, as provided by the 2019 AirToxScreen." This variable did not include skin cancer-related data, and "lifetime" was defined as 70 years. The people of color measurement was determined by the percentage of people identifying as any category other than "non-Hispanic white-alone individuals."
+
+Above in **Figure 1** and **Figure 2** are maps of the Western US, the first mapping the US percentile of air toxin (inhalation) cancer risk (`P_CANCER`) by county, and the second mapping the US percentile of the percentage people of color (`P_PEOPCOLORPCT`) by county. The following areas have counties in higher percentiles for both air toxin cancer risk and percentage people of color compared to other mapped areas: south and central valley areas of California, southern Nevada, and western Oregon. While no statistics have been evaluated here, the fact that the counties in these areas fall in both of these higher percentile categories signals a potential for an environmental justice issue related to racial bias in air toxin monitoring and control.
+
+# Data
+
+The data used for this assignment is from the EJScreen: Environmental Justice Screening and Mapping Tool, which no longer exists online. However, our data can be accessed through the following link: [https://drive.google.com/file/d/1nG6Nj1bXfzQFOVMO8Km3eNy4SWu1YcIQ/view](https://drive.google.com/file/d/1nG6Nj1bXfzQFOVMO8Km3eNy4SWu1YcIQ/view)
+
+# References
+
+[EDS223](https://eds-223-geospatial.github.io/) - [UCSB MEDS 2027](https://bren.ucsb.edu/masters-programs/master-environmental-data-science)

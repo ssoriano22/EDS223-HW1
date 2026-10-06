@@ -2,7 +2,7 @@
 
 ## Description
 
-This repository contains files related to the HW1 assignment "Map making practice" for EDS223, part of the UCSB MEDS 2027 graduate program. In this assignment, we use ```tmap``` and related R packages to create two maps demonstrating a potential environmental justice issue. I choose to make the following maps of the western US (CA, OR, WA, NV) to compare:
+This repository contains files related to the HW1 assignment "Map making practice" for EDS223, part of the UCSB MEDS 2027 graduate program. In this assignment, we use ```tmap``` and related R packages to create two maps demonstrating a potential environmental justice issue. I chose to make the following maps of the western US (CA, OR, WA, NV) to compare:
 
   1. Environmental Map: US percentile of air toxin (inhalation) cancer risk (`P_CANCER`) by county
   2. Demographic Map: US percentile of the percentage people of color (`P_PEOPCOLORPCT`) by county

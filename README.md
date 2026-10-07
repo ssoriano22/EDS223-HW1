@@ -11,7 +11,7 @@ The below directory tree maps out the layout of this repository:
 
 ```
 ├── .gitignore          # .gitignore directory
-├── data                # Contains all data files
+├── data                # Contains all data files (included in .gitignore)
 │   └── ejscreen        # Contains EJScreen data files
 ├── ej_screen.pdf       # PDF containing maps and analysis (rendered from ej_screen.qmd)
 ├── ej_screen.qmd       # Quarto file containing maps and analysis
